@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:screen_protector/screen_protector.dart';
 import 'home_screen.dart';
+import '../services/fake_gps_detector.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,21 +16,36 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isFakeGps = false;
 
   @override
   void initState() {
     super.initState();
     _enableScreenshotProtection();
+    _checkFakeGps();
   }
 
   Future<void> _enableScreenshotProtection() async {
     try {
       await ScreenProtector.protectDataLeakageOn();
-      debugPrint('✅ [LOGIN] Protección contra capturas ACTIVADA');
-      debugPrint('🔒 [LOGIN] FLAG_SECURE habilitado - Capturas bloqueadas');
-      debugPrint('📱 [LOGIN] Cualquier intento de captura será bloqueado por el SO');
+      debugPrint('[LOGIN] Proteccion contra capturas ACTIVADA');
+      debugPrint('[LOGIN] FLAG_SECURE habilitado - Capturas bloqueadas');
+      debugPrint('[LOGIN] Cualquier intento de captura sera bloqueado por el SO');
     } catch (e) {
-      debugPrint('❌ [LOGIN] Error al activar protección: $e');
+      debugPrint('[LOGIN] Error al activar proteccion: $e');
+    }
+  }
+
+  Future<void> _checkFakeGps() async {
+    bool isFake = await FakeGpsDetector.isMockLocationEnabled();
+    setState(() {
+      _isFakeGps = isFake;
+    });
+
+    if (isFake && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FakeGpsDetector.checkAndAlert(context);
+      });
     }
   }
 
@@ -42,6 +58,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
+      bool isFake = await FakeGpsDetector.isMockLocationEnabled();
+      
+      if (isFake) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se puede iniciar sesion con Fake GPS activo'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+          FakeGpsDetector.checkAndAlert(context);
+        }
+        return;
+      }
+
       setState(() {
         _isLoading = true;
       });
@@ -68,7 +100,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: Column(
+        children: [
+          FakeGpsDetector.buildFakeGpsWarningBanner(_isFakeGps),
+          
+          Expanded(
+            child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -210,6 +247,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+            ),
+          ),
+        ],
       ),
     );
   }

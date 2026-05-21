@@ -11,6 +11,8 @@ Este proyecto es una práctica de laboratorio de **Seguridad en Aplicaciones Mó
 - ✅ **Pantalla de Login** con validación de formularios
 - ✅ **Protección FLAG_SECURE** en Android
 - ✅ **Bloqueo de capturas de pantalla** y grabación
+- ✅ **Detección de Fake GPS** con alertas de seguridad
+- ✅ **Banner de advertencia** cuando se detecta ubicación simulada
 - ✅ **Navegación segura** entre pantallas
 - ✅ **Logs de seguridad** para monitoreo
 - ✅ **Diseño moderno** con Material Design 3
@@ -20,7 +22,8 @@ Este proyecto es una práctica de laboratorio de **Seguridad en Aplicaciones Mó
 - **Flutter:** 3.38.3
 - **Dart:** 3.10.1
 - **screen_protector:** 1.5.1
-- **Android:** 15 (API 35)
+- **geolocator:** ^13.0.2
+- **Android:** 15-16 (API 35-36)
 - **Gradle:** AGP 9.0+
 - **Kotlin:** JVM 17
 
@@ -30,6 +33,7 @@ Este proyecto es una práctica de laboratorio de **Seguridad en Aplicaciones Mó
 - **OWASP Mobile Top 10** - M2: Insecure Data Storage
 - **OWASP MASVS** - V2: Data Storage and Privacy
 - **FLAG_SECURE** en ciclo de vida de pantallas (`initState()`)
+- **Detección de Fake GPS** para prevenir ubicaciones simuladas
 - Validación de entrada de usuario
 - Protección activa en todas las pantallas sensibles
 
@@ -38,6 +42,8 @@ Este proyecto es una práctica de laboratorio de **Seguridad en Aplicaciones Mó
 - 🛡️ Malware de captura de pantalla
 - 🛡️ Fuga accidental de credenciales
 - 🛡️ Grabación de pantalla no autorizada
+- 🛡️ **Fake GPS / Ubicación simulada**
+- 🛡️ **Spoofing de ubicación**
 
 ## 📦 Instalación
 
@@ -72,6 +78,15 @@ flutter run
 ✅ [LOGIN] Protección contra capturas ACTIVADA
 🔒 [LOGIN] FLAG_SECURE habilitado - Capturas bloqueadas
 📱 [LOGIN] Cualquier intento de captura será bloqueado por el SO
+✅ [FAKE GPS] Ubicación real detectada
+📍 [FAKE GPS] Lat: 16.7569, Lon: -93.1292
+```
+
+### Si se detecta Fake GPS:
+```
+🚨 [FAKE GPS] ¡ALERTA! Ubicación simulada detectada
+📍 [FAKE GPS] Lat: 37.4219999, Lon: -122.0840575
+⚠️ [FAKE GPS] isMocked: true
 ```
 
 ## 📁 Estructura del Proyecto
@@ -80,19 +95,24 @@ flutter run
 seguridad_login/
 ├── lib/
 │   ├── main.dart                    # Punto de entrada
-│   └── screens/
-│       ├── login_screen.dart        # Pantalla de login con protección
-│       └── home_screen.dart         # Pantalla principal con protección
+│   ├── screens/
+│   │   ├── login_screen.dart        # Pantalla de login con protección
+│   │   └── home_screen.dart         # Pantalla principal con protección
+│   └── services/
+│       └── fake_gps_detector.dart   # Servicio de detección de Fake GPS
 ├── android/
 │   └── app/
-│       └── build.gradle.kts         # Configuración Gradle corregida
+│       ├── src/main/AndroidManifest.xml  # Permisos de ubicación
+│       └── build.gradle.kts              # Configuración Gradle
 ├── pubspec.yaml                     # Dependencias del proyecto
 └── README.md                        # Este archivo
 ```
 
 ## 🔧 Configuración de Seguridad
 
-### En `login_screen.dart` y `home_screen.dart`:
+### 1. Protección contra Capturas de Pantalla
+
+En `login_screen.dart` y `home_screen.dart`:
 
 ```dart
 @override
@@ -111,11 +131,39 @@ Future<void> _enableScreenshotProtection() async {
 }
 ```
 
+### 2. Detección de Fake GPS
+
+En `fake_gps_detector.dart`:
+
+```dart
+static Future<bool> isMockLocationEnabled() async {
+  Position position = await Geolocator.getCurrentPosition(
+    desiredAccuracy: LocationAccuracy.high,
+  );
+  
+  bool isMock = position.isMocked;
+  
+  if (isMock) {
+    debugPrint('🚨 [FAKE GPS] ¡ALERTA! Ubicación simulada detectada');
+  }
+  
+  return isMock;
+}
+```
+
+### 3. Permisos en AndroidManifest.xml
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
 ### En `pubspec.yaml`:
 
 ```yaml
 dependencies:
   screen_protector: ^1.4.2
+  geolocator: ^13.0.2
 ```
 
 ## 🐛 Problemas Resueltos

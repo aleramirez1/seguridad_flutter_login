@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:screen_protector/screen_protector.dart';
 import 'login_screen.dart';
+import '../services/fake_gps_detector.dart';
 
 class HomeScreen extends StatefulWidget {
   final String username;
@@ -15,19 +16,35 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isFakeGps = false;
+
   @override
   void initState() {
     super.initState();
     _enableScreenshotProtection();
+    _checkFakeGps();
   }
 
   Future<void> _enableScreenshotProtection() async {
     try {
       await ScreenProtector.protectDataLeakageOn();
-      debugPrint('✅ [HOME] Protección contra capturas ACTIVADA');
-      debugPrint('🔒 [HOME] FLAG_SECURE habilitado - Capturas bloqueadas');
+      debugPrint('[HOME] Proteccion contra capturas ACTIVADA');
+      debugPrint('[HOME] FLAG_SECURE habilitado - Capturas bloqueadas');
     } catch (e) {
-      debugPrint('❌ [HOME] Error al activar protección: $e');
+      debugPrint('[HOME] Error al activar proteccion: $e');
+    }
+  }
+
+  Future<void> _checkFakeGps() async {
+    bool isFake = await FakeGpsDetector.isMockLocationEnabled();
+    setState(() {
+      _isFakeGps = isFake;
+    });
+
+    if (isFake && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FakeGpsDetector.checkAndAlert(context);
+      });
     }
   }
 
@@ -53,7 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Center(
+      body: Column(
+        children: [
+          FakeGpsDetector.buildFakeGpsWarningBanner(_isFakeGps),
+          
+          Expanded(
+            child: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -104,6 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+            ),
+          ),
+        ],
       ),
     );
   }
