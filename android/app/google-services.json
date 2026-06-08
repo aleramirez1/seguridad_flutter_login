@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1087795231875",
+    "firebase_url": "https://tests-abe52-default-rtdb.firebaseio.com",
+    "project_id": "tests-abe52",
+    "storage_bucket": "tests-abe52.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087795231875:android:f7bfee416ad2418e726fb6",
+        "android_client_info": {
+          "package_name": "com.example.seguridad_login"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmgE3Uf1ZCqTYb8vCalWhKnS-FP39lFio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
