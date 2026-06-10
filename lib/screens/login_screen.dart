@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:screen_protector/screen_protector.dart';
 import 'home_screen.dart';
 import '../services/fake_gps_detector.dart';
 
@@ -21,19 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _enableScreenshotProtection();
     _checkFakeGps();
-  }
-
-  Future<void> _enableScreenshotProtection() async {
-    try {
-      await ScreenProtector.protectDataLeakageOn();
-      debugPrint('[LOGIN] Proteccion contra capturas ACTIVADA');
-      debugPrint('[LOGIN] FLAG_SECURE habilitado - Capturas bloqueadas');
-      debugPrint('[LOGIN] Cualquier intento de captura sera bloqueado por el SO');
-    } catch (e) {
-      debugPrint('[LOGIN] Error al activar proteccion: $e');
-    }
   }
 
   Future<void> _checkFakeGps() async {
