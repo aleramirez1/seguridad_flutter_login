@@ -38,6 +38,7 @@ class StorageService {
     final creditCard = await _storage.read(key: _creditCardKey);
     final ssn = await _storage.read(key: _ssnKey);
 
+
     return SensitiveData(
       userEmail: email ?? '',
       password: password ?? '',

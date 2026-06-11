@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import '../services/fake_gps_detector.dart';
+import '../services/session_manager.dart';
+import '../services/screenshot_protection.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +22,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    SessionManager().stopSession();
+    ScreenshotProtection.enableProtection();
     _checkFakeGps();
   }
 
@@ -72,6 +76,8 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (mounted) {
+        SessionManager().resumeSession();
+        
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

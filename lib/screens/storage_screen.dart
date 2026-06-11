@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/storage_service.dart';
 import '../services/firebase_service.dart';
+import '../services/session_manager.dart';
+import '../services/screenshot_protection.dart';
 import '../models/sensitive_data.dart';
 
 class StorageScreen extends StatefulWidget {
@@ -29,6 +31,8 @@ class _StorageScreenState extends State<StorageScreen> with WidgetsBindingObserv
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    SessionManager().resumeSession();
+    ScreenshotProtection.enableProtection();
     _firebaseService.onDataDeleted = _onDataDeletedRemotely;
     _loadData();
   }
